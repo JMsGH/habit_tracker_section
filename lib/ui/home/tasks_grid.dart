@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker_flutter/models/task.dart';
 import 'package:habit_tracker_flutter/ui/animations/animation_controller_state.dart';
 import 'package:habit_tracker_flutter/ui/animations/custom_fade_transition.dart';
-import 'package:habit_tracker_flutter/ui/animations/staggered_scale_animated_widget.dart';
+import 'package:habit_tracker_flutter/ui/animations/staggered_scale_scale_transition.dart';
 import 'package:habit_tracker_flutter/ui/common_widgets/edit_task_button.dart';
 import 'package:habit_tracker_flutter/ui/task/add_task_item.dart';
 import 'package:habit_tracker_flutter/ui/task/task_with_name_loader.dart';
@@ -30,12 +30,18 @@ class TasksGridState extends State<TasksGrid>
   late final animationController =
       AnimationController(vsync: this, duration: Duration(milliseconds: 300));
 
+  bool _isEditing = false;
+
   void enterEditMode() {
     animationController.forward();
+    setState(() {
+      _isEditing = true;
+    });
   }
 
   void exitEditMode() {
     animationController.reverse();
+    setState(() => _isEditing = false);
   }
 
   @override
@@ -64,15 +70,15 @@ class TasksGridState extends State<TasksGrid>
               return CustomFadeTransition(
                 animation: animationController,
                 child: AddTaskItem(
-                  onCompleted: () => print('Add New Item'),
+                  onCompleted: _isEditing ? () => print('Add New Item') : null,
                 ),
               );
             }
             final task = widget.tasks[index];
             return TaskWithNameLoader(
               task: task,
-              isEditing: false,
-              editTaskButtonBuilder: (_) => StaggeredScaleAnimatedWidget(
+              isEditing: _isEditing,
+              editTaskButtonBuilder: (_) => StaggeredScaleTransition(
                 animation: animationController,
                 index: index,
                 child: EditTaskButton(
